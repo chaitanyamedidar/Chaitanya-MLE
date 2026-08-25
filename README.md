@@ -52,6 +52,27 @@ npm run dev
 
 Copy `.env.example` to `backend/.env` when you add a Gemini key. The app is designed to run without it.
 
+## API (stage 2)
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/health` | liveness |
+| POST | `/subscriptions` | create; server computes `monthly_rate` and days-to-renewal |
+| GET | `/subscriptions` | list with derived flags |
+| GET | `/subscriptions/{id}` | one row |
+| PATCH | `/subscriptions/{id}/status` | `{ "status": "active" \| "paused" }` — does **not** delete |
+| GET | `/metrics` | burn from **active** rows only; upcoming = renewal in 0–7 days |
+
+Yearly cost is divided by 12 on the server. Paused rows stay in the table and still count toward the upcoming-renewals alert; they drop out of monthly burn.
+
+## Tests
+
+```bash
+cd backend
+.venv\Scripts\activate
+pytest -q
+```
+
 ## Status
 
-Scaffold only. Feature commits follow: engines → dashboard → insights → auth → invoice extract → chat.
+Stage 2: engines + SQLite CRUD + metrics. Dashboard UI is next after this stage is verified.
