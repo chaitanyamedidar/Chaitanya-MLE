@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api } from './api'
+import { api, getToken, setToken } from './api'
+import { ChatDock } from './components/ChatDock'
 import { EntryForm } from './components/EntryForm'
 import { InsightsPanel } from './components/InsightsPanel'
+import { LoginScreen } from './components/LoginScreen'
 import { MetricsRow } from './components/MetricsRow'
 import { SubscriptionTable } from './components/SubscriptionTable'
 import type { Insights, Metrics, Status, Subscription, SubscriptionCreate } from './types'
 import './App.css'
 
 export default function App() {
+  const [email, setEmail] = useState<string | null>(null)
+  const [geminiEnabled, setGeminiEnabled] = useState(false)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [insights, setInsights] = useState<Insights | null>(null)
   const [rows, setRows] = useState<Subscription[]>([])
@@ -30,12 +34,24 @@ export default function App() {
   useEffect(() => {
     api
       .health()
-      .then(() => setHealth('ok'))
+      .then((h) => {
+        setHealth('ok')
+        setGeminiEnabled(Boolean(h.gemini))
+      })
       .catch(() => setHealth('down'))
-    refresh().catch(() => {
-      setHealth('down')
-      setBanner('Could not load subscriptions from the API.')
-    })
+
+    if (!getToken()) return
+    api
+      .me()
+      .then(async (me) => {
+        setEmail(me.email)
+        setGeminiEnabled(me.gemini_enabled)
+        await refresh()
+      })
+      .catch(() => {
+        setToken(null)
+        setEmail(null)
+      })
   }, [refresh])
 
   async function handleCreate(payload: SubscriptionCreate) {
@@ -46,6 +62,16 @@ export default function App() {
       await refresh()
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function handleExtract(file: File): Promise<SubscriptionCreate> {
+    const { draft } = await api.extractInvoice(file)
+    return {
+      name: draft.name,
+      cost: draft.cost,
+      billing_cycle: draft.billing_cycle,
+      renewal_date: draft.next_renewal_date ?? '',
     }
   }
 
@@ -62,6 +88,19 @@ export default function App() {
     }
   }
 
+  if (!email) {
+    return (
+      <LoginScreen
+        onAuthed={async (nextEmail) => {
+          setEmail(nextEmail)
+          const me = await api.me()
+          setGeminiEnabled(me.gemini_enabled)
+          await refresh()
+        }}
+      />
+    )
+  }
+
   return (
     <div className="page">
       <header className="hero">
@@ -69,23 +108,42 @@ export default function App() {
           <p className="eyebrow">Subscription Tracker & Renewal Dashboard</p>
           <h1>Monthly cash-flow, at a glance</h1>
           <p className="lede">
-            Add SaaS and streaming bills. Yearly plans are normalized on the server.
-            Pause a row to simulate savings without deleting it.
+            Signed in as {email}. Yearly plans are normalized on the server. Pause a row to
+            simulate savings without deleting it.
           </p>
         </div>
-        <p className={`health health-${health}`}>
-          API {health === 'checking' ? 'checking…' : health === 'ok' ? 'connected' : 'offline'}
-        </p>
+        <div className="hero-actions">
+          <p className={`health health-${health}`}>
+            API {health === 'checking' ? 'checking…' : health === 'ok' ? 'connected' : 'offline'}
+            {geminiEnabled ? ' · Gemini on' : ' · Gemini off'}
+          </p>
+          <button
+            type="button"
+            className="linkish"
+            onClick={() => {
+              setToken(null)
+              setEmail(null)
+            }}
+          >
+            Log out
+          </button>
+        </div>
       </header>
 
       <MetricsRow metrics={metrics} />
       {banner ? <p className="banner">{banner}</p> : null}
-      <EntryForm busy={busy} onSubmit={handleCreate} />
+      <EntryForm
+        busy={busy}
+        geminiEnabled={geminiEnabled}
+        onSubmit={handleCreate}
+        onExtract={handleExtract}
+      />
       <section>
         <h2>Subscriptions</h2>
         <SubscriptionTable rows={rows} pendingId={pendingId} onToggle={handleToggle} />
       </section>
       <InsightsPanel insights={insights} />
+      <ChatDock />
     </div>
   )
 }

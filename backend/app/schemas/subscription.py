@@ -21,6 +21,13 @@ class SubscriptionCreate(BaseModel):
             raise ValueError("name cannot be blank")
         return cleaned
 
+    @field_validator("renewal_date")
+    @classmethod
+    def not_in_the_past(cls, value: date) -> date:
+        if value < date.today():
+            raise ValueError("next renewal date cannot be in the past")
+        return value
+
 
 class SubscriptionStatusUpdate(BaseModel):
     status: Status

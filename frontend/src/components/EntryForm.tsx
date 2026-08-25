@@ -3,15 +3,26 @@ import type { BillingCycle, SubscriptionCreate } from '../types'
 
 type Props = {
   busy: boolean
+  geminiEnabled: boolean
   onSubmit: (payload: SubscriptionCreate) => Promise<void>
+  onExtract: (file: File) => Promise<SubscriptionCreate>
 }
 
-export function EntryForm({ busy, onSubmit }: Props) {
+function todayIso(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+export function EntryForm({ busy, geminiEnabled, onSubmit, onExtract }: Props) {
   const [name, setName] = useState('')
   const [cost, setCost] = useState('')
   const [cycle, setCycle] = useState<BillingCycle>('Monthly')
   const [renewal, setRenewal] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [note, setNote] = useState<string | null>(null)
+  const minDate = todayIso()
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -19,6 +30,10 @@ export function EntryForm({ busy, onSubmit }: Props) {
     const amount = Number(cost)
     if (!name.trim() || !Number.isFinite(amount) || amount <= 0 || !renewal) {
       setError('Fill in a service name, a cost greater than 0, and a renewal date.')
+      return
+    }
+    if (renewal < minDate) {
+      setError('Next renewal date cannot be in the past.')
       return
     }
     try {
@@ -32,8 +47,30 @@ export function EntryForm({ busy, onSubmit }: Props) {
       setCost('')
       setCycle('Monthly')
       setRenewal('')
+      setNote(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add subscription')
+    }
+  }
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return
+    setError(null)
+    setNote('Reading invoice… confirm the fields before saving.')
+    try {
+      const draft = await onExtract(file)
+      setName(draft.name)
+      setCost(String(draft.cost))
+      setCycle(draft.billing_cycle)
+      if (draft.renewal_date && draft.renewal_date >= todayIso()) {
+        setRenewal(draft.renewal_date)
+      } else if (draft.renewal_date) {
+        setRenewal('')
+        setNote('Invoice date is in the past. Pick the next renewal (today or later), then confirm.')
+      }
+    } catch (err) {
+      setNote(null)
+      setError(err instanceof Error ? err.message : 'Could not read invoice')
     }
   }
 
@@ -83,12 +120,26 @@ export function EntryForm({ busy, onSubmit }: Props) {
           <input
             type="date"
             name="renewal_date"
+            min={minDate}
             value={renewal}
             onChange={(e) => setRenewal(e.target.value)}
             required
           />
         </label>
       </div>
+      {geminiEnabled ? (
+        <label className="upload">
+          Upload receipt / invoice
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(e) => void handleFile(e.target.files?.[0])}
+          />
+        </label>
+      ) : (
+        <p className="muted">Invoice upload needs GEMINI_API_KEY.</p>
+      )}
+      {note ? <p className="form-note">{note}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
       <button type="submit" disabled={busy}>
         {busy ? 'Saving…' : 'Add to tracker'}

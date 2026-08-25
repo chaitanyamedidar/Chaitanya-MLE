@@ -31,7 +31,7 @@ def test_known_name_category():
     assert confidence > 0.3
 
 
-def test_insights_bundle(client):
+def test_insights_bundle(client, auth):
     client.post(
         "/subscriptions",
         json={
@@ -40,6 +40,7 @@ def test_insights_bundle(client):
             "billing_cycle": "Monthly",
             "renewal_date": (date.today() + timedelta(days=2)).isoformat(),
         },
+        headers=auth,
     )
     client.post(
         "/subscriptions",
@@ -49,8 +50,9 @@ def test_insights_bundle(client):
             "billing_cycle": "Monthly",
             "renewal_date": (date.today() + timedelta(days=10)).isoformat(),
         },
+        headers=auth,
     )
-    data = client.get("/insights").json()
+    data = client.get("/insights", headers=auth).json()
     assert data["categories"]
     assert data["pause_recommendations"]
     assert data["cashflow"]

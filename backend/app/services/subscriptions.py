@@ -28,17 +28,25 @@ def annotate(sub: Subscription, today: date | None = None) -> SubscriptionRead:
     )
 
 
-def list_subscriptions(db: Session) -> list[Subscription]:
-    return list(db.scalars(select(Subscription).order_by(Subscription.id)).all())
+def list_subscriptions(db: Session, user_id: int) -> list[Subscription]:
+    return list(
+        db.scalars(
+            select(Subscription).where(Subscription.user_id == user_id).order_by(Subscription.id)
+        ).all()
+    )
 
 
-def get_subscription(db: Session, subscription_id: int) -> Subscription | None:
-    return db.get(Subscription, subscription_id)
+def get_subscription(db: Session, user_id: int, subscription_id: int) -> Subscription | None:
+    sub = db.get(Subscription, subscription_id)
+    if sub is None or sub.user_id != user_id:
+        return None
+    return sub
 
 
 def create_subscription(
     db: Session,
     *,
+    user_id: int,
     name: str,
     cost: float,
     billing_cycle: str,
@@ -46,6 +54,7 @@ def create_subscription(
 ) -> Subscription:
     monthly_rate(cost, billing_cycle)
     sub = Subscription(
+        user_id=user_id,
         name=name,
         cost=cost,
         billing_cycle=billing_cycle,

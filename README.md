@@ -11,24 +11,15 @@ Built for the Quantiphi Machine Learning Engineer vibe coding round.
 | Frontend | React + Vite + TypeScript |
 | Backend | FastAPI |
 | Database | SQLite |
-| Insights | scikit-learn (local) |
-| Extract + chat | Gemini 2.5 Flash (optional) |
+| Auth | JWT (`demo@quantiphi.dev` / `Demo@123`) |
+| Insights | scikit-learn (local, loaded once) |
+| Extract + chat | Gemini 2.5 Flash, with sklearn intent fallback |
 
-Business logic (cost normalization, days-to-renewal, burn, pause) lives on the server. The UI is presentation and interaction only.
+All money and date logic lives on the server. Gemini never computes burn, days-to-renewal, or pause math.
 
-## Layout
+## Run
 
-```
-backend/app/          FastAPI app
-backend/app/engines/  Cost Uniformity + Date Intersect
-backend/app/ml/       Insights + Gemini adapters
-backend/data/         SaaS catalog (sklearn training)
-frontend/           React dashboard
-```
-
-## Run locally
-
-Backend:
+Put `GEMINI_API_KEY` in a repo-root `.env` (never commit it). The app still runs without it.
 
 ```bash
 cd backend
@@ -38,42 +29,27 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Frontend:
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-- UI: http://localhost:5173
-- API docs: http://127.0.0.1:8000/docs (`/` redirects here)
-- API health: http://localhost:8000/health
-- Vite proxies `/api/*` to the FastAPI process
+- UI: http://127.0.0.1:5173
+- API: http://127.0.0.1:8000
+- Demo login: `demo@quantiphi.dev` / `Demo@123`
 
-Copy `.env.example` to `backend/.env` when you add a Gemini key. The app is designed to run without it.
+## Product rules
 
-## API (stage 2)
-
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/health` | liveness |
-| POST | `/subscriptions` | create; server computes `monthly_rate` and days-to-renewal |
-| GET | `/subscriptions` | list with derived flags |
-| GET | `/subscriptions/{id}` | one row |
-| PATCH | `/subscriptions/{id}/status` | `{ "status": "active" \| "paused" }` — does **not** delete |
-| GET | `/metrics` | burn from **active** rows only; upcoming = renewal in 0–7 days |
-
-Yearly cost is divided by 12 on the server. Paused rows stay in the table and still count toward the upcoming-renewals alert; they drop out of monthly burn.
-
-## Tests
+- Yearly cost → monthly rate `/ 12` (Cost Uniformity Engine)
+- Upcoming alert = renewal in **0–7 days** of server today
+- Next renewal on create **cannot be in the past** (date picker `min=today` + server 422)
+- Pause greys the row, does **not** delete, and drops that cost from burn
+- Insights: category, overlap, pause ranking, high-cost outliers, 90-day cash-flow
+- Invoice upload prefills the form; nothing is saved until confirm
+- Chat is grounded: Gemini tools or intent fallback, numbers from the ledger
 
 ```bash
 cd backend
-.venv\Scripts\activate
 pytest -q
 ```
-
-## Status
-
-Stage 3: dashboard UI + five local insights (category, overlap, pause ranking, outliers, 90-day cash-flow).
