@@ -117,16 +117,39 @@ export default function App() {
             API {health === 'checking' ? 'checking…' : health === 'ok' ? 'connected' : 'offline'}
             {geminiEnabled ? ' · Gemini on' : ' · Gemini off'}
           </p>
-          <button
-            type="button"
-            className="linkish"
-            onClick={() => {
-              setToken(null)
-              setEmail(null)
-            }}
-          >
-            Log out
-          </button>
+          <div className="hero-btns">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => document.getElementById('entry-form')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Add subscription
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => document.getElementById('invoice-upload')?.click()}
+            >
+              Upload invoice
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => document.getElementById('chat-fab')?.click()}
+            >
+              Open chat
+            </button>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setToken(null)
+                setEmail(null)
+              }}
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </header>
 

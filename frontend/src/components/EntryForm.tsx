@@ -75,7 +75,7 @@ export function EntryForm({ busy, geminiEnabled, onSubmit, onExtract }: Props) {
   }
 
   return (
-    <form className="entry-form" onSubmit={handleSubmit}>
+    <form id="entry-form" className="entry-form" onSubmit={handleSubmit}>
       <h2>Add subscription</h2>
       <div className="form-grid">
         <label>
@@ -127,23 +127,30 @@ export function EntryForm({ busy, geminiEnabled, onSubmit, onExtract }: Props) {
           />
         </label>
       </div>
-      {geminiEnabled ? (
-        <label className="upload">
-          Upload receipt / invoice
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={(e) => void handleFile(e.target.files?.[0])}
-          />
-        </label>
-      ) : (
-        <p className="muted">Invoice upload needs GEMINI_API_KEY.</p>
-      )}
       {note ? <p className="form-note">{note}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
-      <button type="submit" disabled={busy}>
-        {busy ? 'Saving…' : 'Add to tracker'}
-      </button>
+      <div className="form-actions">
+        <label className="btn-secondary upload-btn">
+          Upload invoice
+          <input
+            id="invoice-upload"
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              if (!geminiEnabled) {
+                setError('Gemini is off — add GEMINI_API_KEY and restart the API.')
+                return
+              }
+              void handleFile(file)
+            }}
+          />
+        </label>
+        <button type="submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Add to tracker'}
+        </button>
+      </div>
     </form>
   )
 }
