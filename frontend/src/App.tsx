@@ -130,7 +130,7 @@ export default function App() {
         </div>
       </header>
 
-      <MetricsRow metrics={metrics} />
+      <MetricsRow metrics={metrics} insights={insights} rows={rows} />
       {banner ? <p className="banner">{banner}</p> : null}
       <EntryForm
         busy={busy}

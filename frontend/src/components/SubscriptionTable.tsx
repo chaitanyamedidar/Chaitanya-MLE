@@ -28,6 +28,7 @@ export function SubscriptionTable({ rows, pendingId, onToggle }: Props) {
         <tbody>
           {rows.map((row) => {
             const paused = row.status === 'paused'
+            const maxMonthly = Math.max(1, ...rows.map((r) => r.monthly_rate))
             return (
               <tr key={row.id} className={paused ? 'row-paused' : undefined}>
                 <td>
@@ -38,7 +39,12 @@ export function SubscriptionTable({ rows, pendingId, onToggle }: Props) {
                 </td>
                 <td>{money(row.cost)}</td>
                 <td>{row.billing_cycle}</td>
-                <td>{money(row.monthly_rate)}</td>
+                <td>
+                  {money(row.monthly_rate)}
+                  <div className="mini-track">
+                    <span style={{ width: `${(row.monthly_rate / maxMonthly) * 100}%` }} />
+                  </div>
+                </td>
                 <td>
                   {row.renewal_date}
                   <span className="muted"> · {daysLabel(row.days_to_renewal)}</span>

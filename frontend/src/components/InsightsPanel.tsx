@@ -1,6 +1,8 @@
 import { money } from '../format'
 import type { Insights } from '../types'
 
+const PALETTE = ['#0f766e', '#d97706', '#be123c', '#1d4ed8', '#7c3aed']
+
 type Props = {
   insights: Insights | null
 }
@@ -15,6 +17,9 @@ export function InsightsPanel({ insights }: Props) {
     )
   }
 
+  const cashMax = Math.max(1, ...insights.cashflow.map((row) => row.amount))
+  const pauseMax = Math.max(1, ...insights.pause_recommendations.map((row) => row.savings_if_paused))
+
   return (
     <section className="insights">
       <h2>Insights</h2>
@@ -24,12 +29,24 @@ export function InsightsPanel({ insights }: Props) {
           {insights.categories.length === 0 ? (
             <p className="empty">No active spend.</p>
           ) : (
-            <ul>
-              {insights.categories.map((row) => (
+            <ul className="bar-list">
+              {insights.categories.map((row, i) => (
                 <li key={row.category}>
-                  <strong>{row.category}</strong> {money(row.monthly_spend)}{' '}
-                  <span className="muted">({Math.round(row.share * 100)}%)</span>
-                  <div className="muted">{row.names.join(', ')}</div>
+                  <div className="bar-head">
+                    <strong>{row.category}</strong>
+                    <span>
+                      {money(row.monthly_spend)} · {Math.round(row.share * 100)}%
+                    </span>
+                  </div>
+                  <div className="bar-track">
+                    <span
+                      style={{
+                        width: `${Math.max(6, row.share * 100)}%`,
+                        background: PALETTE[i % PALETTE.length],
+                      }}
+                    />
+                  </div>
+                  <p className="muted">{row.names.join(', ')}</p>
                 </li>
               ))}
             </ul>
@@ -41,11 +58,22 @@ export function InsightsPanel({ insights }: Props) {
           {insights.pause_recommendations.length === 0 ? (
             <p className="empty">Nothing to pause.</p>
           ) : (
-            <ul>
+            <ul className="bar-list">
               {insights.pause_recommendations.map((row) => (
                 <li key={row.id}>
-                  <strong>{row.name}</strong> · {row.category}
-                  <div>Save {money(row.savings_if_paused)}/mo if paused</div>
+                  <div className="bar-head">
+                    <strong>{row.name}</strong>
+                    <span>{money(row.savings_if_paused)}/mo</span>
+                  </div>
+                  <div className="bar-track">
+                    <span
+                      style={{
+                        width: `${(row.savings_if_paused / pauseMax) * 100}%`,
+                        background: '#0f766e',
+                      }}
+                    />
+                  </div>
+                  <p className="muted">{row.category}</p>
                 </li>
               ))}
             </ul>
@@ -57,11 +85,17 @@ export function InsightsPanel({ insights }: Props) {
           {insights.overlaps.length === 0 ? (
             <p className="empty">No overlapping categories.</p>
           ) : (
-            <ul>
+            <ul className="chip-stack">
               {insights.overlaps.map((row) => (
                 <li key={row.category}>
-                  {row.suggestion}
-                  <div className="muted">{row.names.join(', ')}</div>
+                  <p>{row.suggestion}</p>
+                  <div className="chips">
+                    {row.names.map((name) => (
+                      <span key={name} className="chip">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -73,11 +107,11 @@ export function InsightsPanel({ insights }: Props) {
           {insights.anomalies.length === 0 ? (
             <p className="empty">No unusual prices.</p>
           ) : (
-            <ul>
+            <ul className="chip-stack">
               {insights.anomalies.map((row) => (
                 <li key={row.id}>
                   <strong>{row.name}</strong> {money(row.monthly_rate)}/mo
-                  <div className="muted">{row.reason}</div>
+                  <p className="muted">{row.reason}</p>
                 </li>
               ))}
             </ul>
@@ -89,14 +123,19 @@ export function InsightsPanel({ insights }: Props) {
           {insights.cashflow.length === 0 ? (
             <p className="empty">No upcoming charges.</p>
           ) : (
-            <ul className="cashflow">
+            <div className="cash-bars">
               {insights.cashflow.map((row) => (
-                <li key={row.month}>
-                  <strong>{row.month}</strong> {money(row.amount)}
-                  <div className="muted">{row.names.join(', ')}</div>
-                </li>
+                <div key={row.month} className="cash-col">
+                  <div
+                    className="cash-bar"
+                    style={{ height: `${24 + (row.amount / cashMax) * 88}px` }}
+                    title={row.names.join(', ')}
+                  />
+                  <strong>{money(row.amount)}</strong>
+                  <span>{row.month}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </article>
       </div>

@@ -1,8 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
+
 :root {
-  font-family: "Segoe UI", system-ui, sans-serif;
+  --ink: #10231f;
+  --muted: #5c6b66;
+  --paper: #f3eee4;
+  --card: #fffdf8;
+  --line: #e4ddd0;
+  --teal: #0f766e;
+  --amber: #d97706;
+  --font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --display: 'Fraunces', Georgia, serif;
+  font-family: var(--font);
   line-height: 1.45;
-  color: #141821;
-  background: #f4f1ea;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #d9efe9 0%, transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, #f8e7c7 0%, transparent 50%),
+    var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
