@@ -47,6 +47,7 @@ npm run dev
 ```
 
 - UI: http://localhost:5173
+- API docs: http://127.0.0.1:8000/docs (`/` redirects here)
 - API health: http://localhost:8000/health
 - Vite proxies `/api/*` to the FastAPI process
 
@@ -75,4 +76,4 @@ pytest -q
 
 ## Status
 
-Stage 2: engines + SQLite CRUD + metrics. Dashboard UI is next after this stage is verified.
+Stage 3: dashboard UI + five local insights (category, overlap, pause ranking, outliers, 90-day cash-flow).

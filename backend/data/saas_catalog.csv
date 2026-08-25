@@ -1,21 +1,53 @@
-name,category
-Netflix,Streaming
-Amazon Prime Video,Streaming
-Disney+,Streaming
-Spotify,Music
-YouTube Premium,Music
-Adobe Creative Cloud,Design
-Figma,Design
-Notion,Productivity
-Slack,Productivity
-Microsoft 365,Productivity
-Google One,Cloud
-Amazon Web Services,Cloud
-GitHub,Productivity
-Cursor,Productivity
-ChatGPT Plus,Productivity
-Gemini Advanced,Productivity
-Dropbox,Cloud
-iCloud,Cloud
-The New York Times,News
-Cult.fit,Fitness
+name,category,typical_monthly
+Netflix,Streaming,649
+Netflix Premium,Streaming,649
+Amazon Prime Video,Streaming,179
+Prime Video,Streaming,179
+Disney+,Streaming,299
+Disney Plus,Streaming,299
+Hotstar,Streaming,299
+Hulu,Streaming,399
+HBO Max,Streaming,499
+Sony LIV,Streaming,299
+JioCinema,Streaming,29
+YouTube Premium,Music,129
+YouTube Music,Music,129
+Spotify,Music,119
+Spotify Premium,Music,119
+Apple Music,Music,119
+Amazon Music,Music,99
+Gaana,Music,99
+Adobe,Design,1675
+Adobe Creative Cloud,Design,1675
+Photoshop,Design,1675
+Figma,Design,1250
+Canva Pro,Design,500
+Canva,Design,500
+Sketch,Design,900
+Notion,Productivity,800
+Slack,Productivity,725
+Microsoft 365,Productivity,489
+Office 365,Productivity,489
+Google Workspace,Productivity,680
+Zoom,Productivity,1200
+Dropbox,Cloud,750
+Google One,Cloud,130
+iCloud,Cloud,75
+Amazon Web Services,Cloud,2000
+AWS,Cloud,2000
+Google Cloud,Cloud,2000
+Azure,Cloud,2000
+GitHub,Productivity,400
+GitHub Pro,Productivity,400
+Cursor,Productivity,1600
+ChatGPT Plus,Productivity,1650
+ChatGPT,Productivity,1650
+Gemini Advanced,Productivity,1650
+The New York Times,News,450
+Washington Post,News,400
+Medium,News,450
+Cult.fit,Fitness,1200
+Cultfit,Fitness,1200
+Cult,Fitness,1200
+Peloton,Fitness,1300
+Strava,Fitness,800
