@@ -37,7 +37,6 @@ npm run dev
 
 - UI: http://127.0.0.1:5173
 - API: http://127.0.0.1:8000
-- Demo login: `demo@quantiphi.dev` / `Demo@123`
 
 ## Product rules
 
